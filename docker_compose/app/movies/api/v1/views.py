@@ -14,7 +14,6 @@ class MoviesApiMixin:
 
     def get_queryset(self):
         queryset = MoviesApiMixin.model.objects \
-            .prefetch_related('genres', 'persons') \
             .values().annotate(
                 genres=ArrayAgg('genres__name', distinct=True),
                 actors=ArrayAgg(
