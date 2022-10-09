@@ -1,0 +1,61 @@
+version: '3'
+services:
+
+  db:
+    image: postgres:13.0-alpine
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./psql/movies_database.sql:/docker-entrypoint-initdb.d/movies_database.sql
+    env_file:
+      - ./.env
+    expose:
+      - "5432"
+
+  service:
+    build: app
+    command:
+      sh -c "python3 manage.py migrate
+             && python3 manage.py makemigrations movies
+             && python3 manage.py migrate --fake movies 0001
+             && python3 manage.py create_admin
+             && python3 manage.py loaddata movies/fixtures/movies.json
+             && uwsgi --strict --ini uwsgi.ini"
+    restart: always
+    expose:
+      - "8000"
+    volumes:
+      - static_value:/opt/app/static/
+      - media_value:/opt/app/media/
+    env_file:
+      - ./.env
+    depends_on:
+      - db
+
+  nginx:
+    image: nginx:1.19.2
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/configs:/etc/nginx/conf.d:ro
+      - static_value:/var/html/static/
+      - media_value:/var/html/media/
+    depends_on:
+      - service
+    ports:
+      - "80:80"
+
+  swagger:
+    image: swaggerapi/swagger-ui
+    volumes:
+      - ./openapi/openapi.yaml:/swagger.yaml
+    env_file:
+      - ./.env
+    depends_on:
+      - nginx
+    ports:
+      - "8080:8080"
+
+volumes:
+  static_value:
+  media_value:
+  postgres_data:
