@@ -22,3 +22,38 @@
 - Для работы со статикой нужно подумать, как залить данные в файловую систему контейнера с Nginx.
 - Для задания дана базовая структура, которой можно пользоваться.
 - При настройке docker-compose важно проверять пути до папок. Большинство проблем связанно именно с этим.
+
+## Установка и запуск:
+1. Клонировать репозиторий на локальную машину.
+   ```https://github.com/Oorzhakau/new_admin_panel_sprint_2.git```
+2. Создать файл .env на основе .env_example в директории `docker-compose/` и указать значение переменных окружения:
+```
+# === Database Postgres ===
+
+POSTGRES_DB_ENGINE=django.db.backends.postgresql
+POSTGRES_DB=movies_database
+POSTGRES_USER=app
+POSTGRES_PASSWORD=123qwe
+POSTGRES_DB_HOST=db
+POSTGRES_DB_PORT=5432
+POSTGRES_DB_SCHEMA=content
+
+# === Django ===
+
+DJ_SU_ADMIN=admin
+DJ_SU_EMAIL=admin@mail.com
+DJ_SU_PASSWORD=pass
+
+DJ_SECRET_KEY=django-insecure-123456
+
+DJ_DEBUG=False
+
+# === Swagger ===
+
+SWAGGER_JSON=/swagger.yaml
+```
+3. Выполнить в директории `docker-compose/` команду:
+```
+docker-compose up --build
+```
+4. Документации API развернута на `http://127.0.0.1:8080/`.

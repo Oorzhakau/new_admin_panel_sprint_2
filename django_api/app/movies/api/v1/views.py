@@ -12,26 +12,22 @@ class MoviesApiMixin:
     model = Filmwork
     http_method_names = ['get']
 
+    @staticmethod
+    def get_person_aggregation(role: Role) -> ArrayAgg:
+        return ArrayAgg(
+            'persons__full_name',
+            distinct=True,
+            filter=Q(personfilmwork__role=role)
+        )
+
     def get_queryset(self):
         queryset = MoviesApiMixin.model.objects \
             .values().annotate(
-            genres=ArrayAgg('genres__name', distinct=True),
-            actors=ArrayAgg(
-                'persons__full_name',
-                distinct=True,
-                filter=Q(personfilmwork__role=Role.ACTOR)
-            ),
-            directors=ArrayAgg(
-                'persons__full_name',
-                distinct=True,
-                filter=Q(personfilmwork__role=Role.DIRECTOR)
-            ),
-            writers=ArrayAgg(
-                'persons__full_name',
-                distinct=True,
-                filter=Q(personfilmwork__role=Role.WRITER)
+                genres=ArrayAgg('genres__name', distinct=True),
+                actors=self.get_person_aggregation(Role.ACTOR),
+                directors=self.get_person_aggregation(Role.DIRECTOR),
+                writers=self.get_person_aggregation(Role.WRITER)
             )
-        )
         return queryset
 
     def render_to_response(self, context, **response_kwargs):

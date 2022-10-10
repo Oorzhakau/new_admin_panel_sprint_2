@@ -1,8 +1,7 @@
-version: '3'
 services:
 
   db:
-    image: postgres:13.0-alpine
+    image: postgres:14-alpine
     restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -14,13 +13,6 @@ services:
 
   service:
     build: app
-    command:
-      sh -c "python3 manage.py migrate
-             && python3 manage.py makemigrations movies
-             && python3 manage.py migrate --fake movies 0001
-             && python3 manage.py create_admin
-             && python3 manage.py loaddata movies/fixtures/movies.json
-             && uwsgi --strict --ini uwsgi.ini"
     restart: always
     expose:
       - "8000"
@@ -33,7 +25,7 @@ services:
       - db
 
   nginx:
-    image: nginx:1.19.2
+    image: nginx:1.23.1-alpine
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/configs:/etc/nginx/conf.d:ro

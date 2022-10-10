@@ -10,18 +10,22 @@ ENV UWSGI_HARAKIRI 240
 ENV DJANGO_SETTINGS_MODULE 'config.settings'
 
 COPY run_uwsgi.sh run_uwsgi.sh
+COPY run_migration.sh run_migration.sh
 COPY requirements.txt requirements.txt
 COPY uwsgi/uwsgi.ini uwsgi.ini
 
-RUN  mkdir -p /var/www/static/ \
-     && mkdir -p /var/www/media/ \
-     && mkdir -p /opt/app/static/ \
-     && mkdir -p /opt/app/media/ \
-     && python3 -m pip install --upgrade pip \
-     && python3 -m pip install --no-cache-dir -r requirements.txt
+RUN mkdir -p /var/www/static/ \
+    && mkdir -p /var/www/media/ \
+    && mkdir -p /opt/app/static/ \
+    && mkdir -p /opt/app/media/ \
+    && python3 -m pip install --upgrade pip \
+    && python3 -m pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN  python3 manage.py collectstatic --no-input
+RUN python3 manage.py collectstatic --no-input
 
 EXPOSE 8000
+
+CMD ./run_migration.sh
+CMD ["uwsgi", "--strict", "--ini", "uwsgi.ini"]
